@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+           http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
+           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+	>
+	
+	<!-- Tasks -->
+	<bean id="calculateTask" class="com.kd.business.task.CalculateTask"></bean>  <!-- 7  12 -->
+	<bean id="unevaluTask" class="com.kd.business.unevalu.UnevaluCalculator"></bean>  <!-- 23 -->
+	
+	<!-- 此任务对PMS数据是选择性删除的，但是pmsFileInsertorTask任务执行时，却又执行了全量清除  为什么？ -->
+	<bean id="truncatedataTask" class="com.kd.business.task.TruncatedataTask"></bean>   <!-- 0 -->	
+	<bean id="createTableTask" class="com.kd.business.task.TableCreateTask"></bean>   <!-- 0 -->
+	<bean id="dmsFileInsertorTask" class="com.kd.business.task.DmsFileInsertorTask"></bean>  <!-- 4:30  5:30  6:30 -->
+	<!-- 任务执行时，执行了全量清除 -->
+	<bean id="pmsFileInsertorTask" class="com.kd.business.task.PmsFileInsertorTask"></bean>  <!-- 6:20 -->
+	<!-- 清除目录后，还将DMS台账表清空了 -->
+	<bean id="delDmsPmsAllFileTask" class="com.kd.business.task.DelDmsPmsAllFileTask"></bean>  <!-- 23:55 -->
+	<bean id="modelFileTask" class="com.kd.business.task.ModelFileTask"></bean>  <!-- 3:50 -->
+	
+	<!-- Jobs -->
+	<bean id="calculateJob" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="calculateTask" />
+		<property name="targetMethod" value="calculate" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="unevaluJob" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="unevaluTask" />
+		<property name="targetMethod" value="calculateUnevalu" />
+		<property name="concurrent" value="false" />
+	</bean>
+	
+	<bean id="truncatedataJob" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="truncatedataTask" />
+		<property name="targetMethod" value="truncatedata" />
+		<property name="concurrent" value="false" />
+	</bean>
+	
+	<bean id="createTableJob" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="createTableTask" />
+		<property name="targetMethod" value="createTable" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="dmsFileInsertorJob" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="dmsFileInsertorTask" />
+		<property name="targetMethod" value="parseAndInsertDB" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="pmsFileInsertorJob" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="pmsFileInsertorTask" />
+		<property name="targetMethod" value="parseAndInsertDBTime" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="delDmsPmsAllFileJob"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="delDmsPmsAllFileTask" />
+		<property name="targetMethod" value="delFile" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="modelFileJob"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="modelFileTask" />
+		<property name="targetMethod" value="zipFile" />
+		<property name="concurrent" value="false" />
+	</bean>
+	
+
+	<!-- triggers -->
+	<!-- 0 30 7 1/1 * ? -->
+	<bean id="calculateTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="calculateJob" />
+		<property name="cronExpression" value="0 0 7 * * ?" />     <!--7:00考核指标计算-->
+	</bean>
+	<bean id="calculateTrigger2" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="calculateJob" />
+		<property name="cronExpression" value="0 0 12 * * ?" />    <!--12:00考核指标计算-->
+	</bean>
+	<bean id="unevaluTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="unevaluJob" />
+		<property name="cronExpression" value="0 0 23 * * ?" />    <!--23:00免考核指标计算-->
+	</bean>
+	<bean id="truncatedataTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="truncatedataJob" />
+		<property name="cronExpression" value="0 0 0 * * ?" />     <!--0:00清空某些表数据-->
+	</bean>
+	<bean id="createTableTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="createTableJob" />
+		<property name="cronExpression" value="0 0 0 * * ?" />     <!--0:00创建日表（及每月1号创建月表）-->
+	</bean>
+	<bean id="dmsFileInsertorTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="dmsFileInsertorJob" />
+		<property name="cronExpression" value="0 30 4 * * ?" />    <!--4:30DMS文件入库-->
+	</bean>
+	<bean id="dmsFileInsertorTrigger2" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="dmsFileInsertorJob" />
+		<property name="cronExpression" value="0 30 5 * * ?" />    <!--5:30DMS文件入库-->
+	</bean>
+	<bean id="dmsFileInsertorTrigger3" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="dmsFileInsertorJob" />
+		<property name="cronExpression" value="0 30 6 * * ?" />    <!--6:30DMS文件入库-->
+	</bean>
+	<bean id="pmsFileInsertorTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="pmsFileInsertorJob" />
+		<property name="cronExpression" value="0 20 6 * * ?" />    <!--6:20PMS文件入库-->
+	</bean>
+	<bean id="delDmsPmsAllFileTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="delDmsPmsAllFileJob" />
+		<property name="cronExpression" value="0 55 23 * * ?" />   <!--23:55清空DMS,PMS文件夹下的文件-->
+	</bean>
+	<bean id="modelFileTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="modelFileJob" />
+		<property name="cronExpression" value="0 50 3 * * ?" />    <!--3:50拷贝ZIP文件给图模检验系统-->
+	</bean>
+
+	<!-- 定时任务调度器 -->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref local="calculateTrigger" />
+				<ref local="calculateTrigger2" />
+				<ref local="unevaluTrigger" />
+				<ref local="truncatedataTrigger" />
+				<ref local="createTableTrigger" />
+				<ref local="dmsFileInsertorTrigger" />
+				<ref local="dmsFileInsertorTrigger2" />
+				<ref local="dmsFileInsertorTrigger3" />
+				<ref local="pmsFileInsertorTrigger" />
+				<ref local="delDmsPmsAllFileTrigger" />
+				<ref local="modelFileTrigger" />
+			</list>
+		</property>
+	</bean>
+</beans>
