@@ -85,14 +85,14 @@ public class DevCalculator implements CalculatorInterface{
 	public void callSql(Date date) {
 		// TODO Auto-generated method stub
 		
-		systemService.executeSql("call EVALUSYSTEM.DETAIL.CHECK_DMS_MODEL");
+	/*	systemService.executeSql("call EVALUSYSTEM.DETAIL.CHECK_DMS_MODEL");
 		systemService.executeSql("call EVALUSYSTEM.DETAIL.CHECK_GPMS_MODEL");
 		
 		//进行数据统计前，删除边界设备
 		systemService.executeSql("call EVALUSYSTEM.DETAIL.DELETEBOUNDARYDAT");
 		systemService.executeSql("call EVALUSYSTEM.RESULT.DELETEDATA('"+DateUtil.dateToStr(date)+"')");
 		systemService.executeSql("call EVALUSYSTEM.RESULT.DGPMSPROCESS('"+DateUtil.dateToStr(date)+"')");
-		
+		*/
 	}
 	
 	@Override

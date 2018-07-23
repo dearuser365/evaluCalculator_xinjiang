@@ -21,13 +21,13 @@ insert into ${TABLENAME}(organ_code,code,value,datatype,updatetime,statistime,di
 			select organ.code,organ.organ_code,decode(b.v,NULL,0,b.v) v ,decode(b.d,NULL,'百分比',b.d) d 
 				from 
 					(
-						select a.code code,substr(a.organ_code, 0, 5) organ_code,round(avg(a.value), 4) v,a.datatype d 
+						select a.code code,substr(a.organ_code, 0, 4) organ_code,round(avg(a.value), 4) v,a.datatype d 
 							from
 								(select * from ${TABLENAME} where datatype in('百分比', '数值') and dimname = '无') a, 
 								(select * from EVALUSYSTEM.config.averall where flag = 0 and code_type = 0) b, 
 								(select * from EVALUSYSTEM.config.organ where flag = 0) c 
 							where a.code = b.code and a.organ_code = c.organ_code 
-							group by substr(a.organ_code, 0, 5),a.code,a.datatype
+							group by substr(a.organ_code, 0, 4),a.code,a.datatype
 					) b 
 					right join
 					(

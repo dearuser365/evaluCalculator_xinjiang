@@ -28,7 +28,7 @@ from EVALUSYSTEM.config.organ organ
      	from ${TABLENAME} 
      	where code in ('pmslds','pmsdiss','pmsbreakers','pmsbuss','pmssts')
      	group by organ_code) fm  
-     on organ.organ_code = fz.organ_code
+     on organ.organ_code = fm.organ_code
 UNION ALL
 --百分比
 select 
@@ -58,4 +58,4 @@ from EVALUSYSTEM.config.organ organ
      	from ${TABLENAME} 
      	where code in ('pmslds','pmsdiss','pmsbreakers','pmsbuss','pmssts')
      	group by organ_code) fm  
-     on organ.organ_code = fz.organ_code
+     on organ.organ_code = fm.organ_code

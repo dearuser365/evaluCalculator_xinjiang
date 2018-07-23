@@ -21,7 +21,7 @@ public class DistrictCalculator {
 	
 	
 //	organ.flag=0/1 县公司/本部  organ.subtype=0/1 有/无县公司
-//	averall.flag=0/1 地区=本部+县公司/地区=本部  averall.code_type=0/1 指标值/总数
+//	averall.flag=0/1 地区=本部+县公司/地区=本部  averall.code_type=0/1 指标值(如数值、百分比)/总数（如个数，小时）
 	private static final String calculateAverage1Sql = 
 			SqlReader.readSql("/com/kd/business/sql/calculate/calculateAverage1.sql");
 	
